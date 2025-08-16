@@ -345,6 +345,25 @@ jobs:
           cp -vr scripts/custom/ files/
           chmod +x files/etc/script/*.sh
 
+      - name: 启动时执行adguard_github520脚本
+        run: |
+          mkdir -p files/etc/init.d
+          cat << 'EOF' > files/etc/init.d/adguard-start
+          #!/bin/sh /etc/rc.common
+
+          START=95  # 启动优先级，适当提前执行
+
+          start() {
+            logger -t adguard-start "Running adguard_github520.sh..."
+            /etc/script/adguard_github520.sh
+          }
+          EOF
+          chmod +x files/etc/init.d/adguard-start
+
+      - name: 添加软链接，让adguard-start在系统启动时自动运行
+        run: ln -s ../init.d/adguard-start files/etc/rc.d/S95adguard-start
+
+
       - name: 下载软件包
         id: package
         timeout-minutes: 30
