@@ -363,6 +363,20 @@ jobs:
       - name: 添加软链接，让adguard-start在系统启动时自动运行
         run: ln -s ../init.d/adguard-start files/etc/rc.d/S95adguard-start
 
+      - name: 添加计划任务
+        run: |
+          mkdir -p files/etc/crontabs
+          cat << 'EOF' > files/etc/crontabs/root
+          # 每天 9:00 执行 AdGuard 脚本
+          0 9 * * * /etc/script/adguard_github520.sh >> /tmp/adguard_cron.log 2>&1
+
+          # 每天 3:30 执行模型更新脚本
+          30 3 * * * /etc/script/model_update.sh >> /tmp/model_update.log 2>&1
+          EOF
+
+      - name: 添加计划任务软链接
+        run: ln -s ../init.d/cron files/etc/rc.d/S50cron
+
 
       - name: 下载软件包
         id: package
