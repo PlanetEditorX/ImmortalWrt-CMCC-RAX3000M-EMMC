@@ -360,9 +360,6 @@ jobs:
           EOF
           chmod +x files/etc/init.d/adguard-start
 
-      - name: 添加软链接，让adguard-start在系统启动时自动运行
-        run: ln -s ../init.d/adguard-start files/etc/rc.d/S95adguard-start
-
       - name: 添加计划任务
         run: |
           mkdir -p files/etc/crontabs
@@ -372,9 +369,6 @@ jobs:
           # 每天 5:00 执行 AdGuard 脚本
           30 5 * * * /etc/script/adguard_github520.sh >> /tmp/log/adguard_cron.log 2>&1
           EOF
-
-      - name: 添加计划任务软链接
-        run: ln -s ../init.d/cron files/etc/rc.d/S50cron
 
       - name: 初次启动执行keepalived部署脚本
         run: |
@@ -400,9 +394,6 @@ jobs:
           }
           EOF
           chmod +x files/etc/init.d/deploy-ha-once
-
-      - name: 设置 deploy-ha-once 启用启动项
-        run: ln -s ../init.d/deploy-ha-once files/etc/rc.d/S91deploy-ha-once
 
       - name: 下载软件包
         id: package
