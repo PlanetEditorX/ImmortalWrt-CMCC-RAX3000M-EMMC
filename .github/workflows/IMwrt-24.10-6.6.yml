@@ -368,14 +368,41 @@ jobs:
           mkdir -p files/etc/crontabs
           cat << 'EOF' > files/etc/crontabs/root
           # 每天 4:30 执行模型更新脚本
-          30 4 * * * /etc/script/model_update.sh >> /tmp/model_update.log 2>&1
+          30 4 * * * /etc/script/model_update.sh >> /tmp/log/model_update.log 2>&1
           # 每天 5:00 执行 AdGuard 脚本
-          30 5 * * * /etc/script/adguard_github520.sh >> /tmp/adguard_cron.log 2>&1
+          30 5 * * * /etc/script/adguard_github520.sh >> /tmp/log/adguard_cron.log 2>&1
           EOF
 
       - name: 添加计划任务软链接
         run: ln -s ../init.d/cron files/etc/rc.d/S50cron
 
+      - name: 初次启动执行keepalived部署脚本
+        run: |
+          mkdir -p files/etc/init.d
+          cat << 'EOF' > files/etc/init.d/deploy-ha-once
+          #!/bin/sh /etc/rc.common
+
+          START=91
+
+          FLAG_FILE=/etc/script/.deploy_ha_done
+
+          start() {
+            if [ ! -f "$FLAG_FILE" ]; then
+              logger -t deploy-ha-once "Running deploy_ha_main.sh for the first time..."
+              /etc/script/deploy_ha_main.sh >> /tmp/deploy_ha.log 2>&1
+              touch "$FLAG_FILE"
+              logger -t deploy-ha-once "Initial deployment complete. Rebooting..."
+              sleep 3
+              reboot
+            else
+              logger -t deploy-ha-once "deploy_ha_main.sh already executed, skipping."
+            fi
+          }
+          EOF
+          chmod +x files/etc/init.d/deploy-ha-once
+
+      - name: 设置 deploy-ha-once 启用启动项
+        run: ln -s ../init.d/deploy-ha-once files/etc/rc.d/S91deploy-ha-once
 
       - name: 下载软件包
         id: package
