@@ -338,6 +338,13 @@ jobs:
           $GITHUB_WORKSPACE/$DIY_P2_SH
           make defconfig
 
+      - name: 复制自用脚本到 files/etc/script
+        run: |
+          # OpenWrt 构建系统会自动将 files/ 中的内容打包进镜像中
+          mkdir -p files/etc/script
+          cp -vr scripts/custom/ files/
+          chmod +x files/etc/script/*.sh
+
       - name: 下载软件包
         id: package
         timeout-minutes: 30
