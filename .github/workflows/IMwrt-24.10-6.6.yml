@@ -367,11 +367,10 @@ jobs:
         run: |
           mkdir -p files/etc/crontabs
           cat << 'EOF' > files/etc/crontabs/root
-          # 每天 9:00 执行 AdGuard 脚本
-          0 9 * * * /etc/script/adguard_github520.sh >> /tmp/adguard_cron.log 2>&1
-
-          # 每天 3:30 执行模型更新脚本
-          30 3 * * * /etc/script/model_update.sh >> /tmp/model_update.log 2>&1
+          # 每天 4:30 执行模型更新脚本
+          30 4 * * * /etc/script/model_update.sh >> /tmp/model_update.log 2>&1
+          # 每天 5:00 执行 AdGuard 脚本
+          30 5 * * * /etc/script/adguard_github520.sh >> /tmp/adguard_cron.log 2>&1
           EOF
 
       - name: 添加计划任务软链接
