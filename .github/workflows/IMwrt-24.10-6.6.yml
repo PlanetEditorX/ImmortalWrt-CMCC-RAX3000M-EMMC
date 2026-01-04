@@ -250,6 +250,8 @@ jobs:
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
+          sudo swapoff -a || true
+          sudo rm -f /swapfile || true
           sudo apt-get update
           sudo apt-get install -y build-essential ccache cmake curl git gawk gcc-multilib g++-multilib \
             libelf-dev libfuse-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev \
@@ -260,12 +262,6 @@ jobs:
           sudo timedatectl set-timezone "$TZ"
           sudo mkdir -p /workdir
           sudo chown $USER:$GROUPS /workdir
-
-      - name: 配置 ccache
-        run: |
-          echo "export PATH=/usr/lib/ccache:$PATH" >> $GITHUB_ENV
-          echo "export CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
-          ccache -M 5G
 
       - name: 安装 GitHub CLI
         run: |
@@ -359,8 +355,23 @@ jobs:
         run: |
           [ -e files ] && mv files openwrt/files
           [ -e config/$CONFIG_FILE ] && mv config/$CONFIG_FILE openwrt/.config
+
           echo "CONFIG_TARGET_mediatek_filogic_DEVICE_${{ matrix.device_model }}=y" >> openwrt/.config
-          echo "CONFIG_CCACHE=y" >> openwrt/.config
+
+          # 关闭 ccache
+          sed -i '/^CONFIG_CCACHE=/d' openwrt/.config
+          echo "CONFIG_CCACHE=n" >> openwrt/.config
+
+          # 关闭 initramfs（不需要单独 initramfs 镜像时）
+          sed -i '/CONFIG_TARGET_ROOTFS_INITRAMFS/d' openwrt/.config
+          echo "CONFIG_TARGET_ROOTFS_INITRAMFS=n" >> openwrt/.config
+
+          # 关闭内核调试符号（vmlinux.debug 很占空间）
+          sed -i '/CONFIG_KERNEL_DEBUG_INFO=/d' openwrt/.config || true
+          sed -i '/CONFIG_KERNEL_KALLSYMS=/d' openwrt/.config || true
+          echo "CONFIG_KERNEL_DEBUG_INFO=n" >> openwrt/.config
+          echo "CONFIG_KERNEL_KALLSYMS=n" >> openwrt/.config
+
           chmod +x $DIY_P2_SH
           cd openwrt
           $GITHUB_WORKSPACE/$DIY_P2_SH
@@ -515,6 +526,14 @@ jobs:
           done
           echo "FIRMWARE=$PWD" >> $GITHUB_ENV
           echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 清理构建目录以节省空间
+        if: always()
+        run: |
+          echo "清理 openwrt/build_dir、staging_dir、tmp 以释放空间..."
+          rm -rf openwrt/build_dir || true
+          rm -rf openwrt/staging_dir || true
+          rm -rf openwrt/tmp || true
 
       - name: 上传 bin
         uses: actions/upload-artifact@v4
