@@ -39,3 +39,6 @@ else
   echo "错误：$EEPROM_FILE 不存在，无法创建符号链接"
   exit 1
 fi
+
+# 兼容cmcc rax3000m 和 cmcc rax3000m-emmc
+sed -i 's/SUPPORTED_DEVICES += cmcc,rax3000m-emmc/SUPPORTED_DEVICES += cmcc,rax3000m cmcc,rax3000m-emmc/' target/linux/mediatek/image/filogic.mk
