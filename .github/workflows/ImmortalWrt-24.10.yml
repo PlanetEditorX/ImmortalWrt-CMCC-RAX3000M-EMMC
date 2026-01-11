@@ -474,7 +474,7 @@ jobs:
       - name: 恢复编译缓存
         uses: actions/cache@v4
         with:
-          path: openwrt/staging_dir/host/ccache
+          path: ~/.cache/ccache
           key: ccache-${{ github.event.inputs.device_model }}-${{ env.REPO_BRANCH }}-${{ env.LATEST_SHA }}
           restore-keys: |
             ccache-${{ github.event.inputs.device_model }}-${{ env.REPO_BRANCH }}-
@@ -493,24 +493,6 @@ jobs:
           # 强制接管 OpenWrt 编译体系
           cd openwrt
           echo "CONFIG_CCACHE=y" >> .config
-
-      - name: 调试：查找 ccache 目录
-        run: |
-          echo ">>> which ccache"
-          which ccache || true
-
-          echo ">>> ccache -p | grep dir"
-          ccache -p | grep dir || true
-
-          echo ">>> 搜索可能的 ccache 目录"
-          find $HOME -maxdepth 3 -type d -name "ccache" 2>/dev/null || true
-          find openwrt -maxdepth 5 -type d -name "ccache" 2>/dev/null || true
-
-          echo ">>> 打印 ccache 配置"
-          ccache -p || true
-
-          echo ">>> 打印环境变量 PATH"
-          echo "$PATH"
 
       - name: 下载源码包
         run: |
@@ -554,13 +536,13 @@ jobs:
           echo "ccache 统计："
           ccache -s || true
           echo "缓存目录大小："
-          du -sh openwrt/staging_dir/host/ccache || true
+          du -sh ~/.cache/ccache || true
 
       - name: 保存编译缓存
         if: steps.compile.outputs.status == 'success'
         uses: actions/cache@v4
         with:
-          path: openwrt/staging_dir/host/ccache
+          path: ~/.cache/ccache
           key: ccache-${{ github.event.inputs.device_model }}-${{ env.REPO_BRANCH }}-${{ env.LATEST_SHA }}
 
       - name: 上传编译日志
