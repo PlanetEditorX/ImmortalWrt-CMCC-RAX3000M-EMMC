@@ -516,11 +516,24 @@ jobs:
           echo "=== 追加 ccache 配置 ==="
           cat >> include/toplevel.mk << 'EOF'
 
-          # Enable ccache for all builds
-          export CCACHE_DIR
-          export CC=ccache gcc
-          export CXX=ccache g++
+          # Enable ccache for host/toolchain only
+          export CCACHE_DIR=$(TOPDIR)/.ccache
+          export CCACHE_BASEDIR=$(TOPDIR)
+          export CCACHE_COMPRESS=1
+          export CCACHE_SLOPPINESS=time_macros
 
+          # 禁止 ccache 参与 kernel 编译（关键）
+          export CCACHE_NOHASHDIR=1
+          export CCACHE_NODIRECT=1
+          export CCACHE_DISABLE=1
+
+          # 仅在 host/toolchain 阶段启用 ccache
+          ifneq ($(findstring host,$(MAKECMDGOALS)),)
+            export CCACHE_DISABLE=0
+          endif
+          ifneq ($(findstring toolchain,$(MAKECMDGOALS)),)
+            export CCACHE_DISABLE=0
+          endif
           EOF
 
           # 顺便再显示最后 15 行确认
