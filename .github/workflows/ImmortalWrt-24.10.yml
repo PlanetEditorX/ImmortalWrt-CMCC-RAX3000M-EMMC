@@ -7,12 +7,12 @@ on:
   #   branches: [ main ]
   workflow_dispatch:
     inputs:
-      device_model:
-        description: '选择目标设备型号'
-        type: choice
-        required: true
-        options:
-          - cmcc_rax3000m
+      # device_model:
+      #   description: '选择目标设备型号'
+      #   type: choice
+      #   required: true
+      #   options:
+      #     - cmcc_rax3000m
       upload_bin_dir:
         description: '上传 bin 目录'
         type: boolean
@@ -48,6 +48,11 @@ on:
           - '24.10.config'
       enable_keepalived:
         description: '集成keepalived'
+        type: boolean
+        required: true
+        default: true
+      enable_docker:
+        description: '集成 Docker'
         type: boolean
         required: true
         default: true
@@ -96,6 +101,7 @@ env:
   BUILD_COMMIT_MSGS_FILE: ''
   CHECKED_COMMIT_MSGS_FILE: ''
   ENABLE_KEEPALIVED: ${{ github.event.inputs.enable_keepalived || 'true' }}
+  ENABLE_DOCKER: ${{ github.event.inputs.enable_docker || 'true' }}
   ENABLE_OPENCLASH: ${{ github.event.inputs.enable_openclash || 'true' }}
   ENABLE_WECHATPUSH: ${{ github.event.inputs.enable_wechatpush || 'false' }}
   UPLOAD_ALL_FILES: ${{ github.event.inputs.upload_all_files || 'false' }}
@@ -483,6 +489,7 @@ jobs:
           [ "$ENABLE_OPENCLASH" = "true" ] && inject_config "$GITHUB_WORKSPACE/config/openclash.config"
           [ "$ENABLE_WECHATPUSH" = "true" ] && inject_config "$GITHUB_WORKSPACE/config/wechatpush.config"
           [ "$ENABLE_KEEPALIVED" = "true" ] && inject_config "$GITHUB_WORKSPACE/config/keepalived.config"
+          [ "$ENABLE_DOCKER" = "true" ] && inject_config "$GITHUB_WORKSPACE/config/docker.config"
 
           # 禁用 Rust
           inject_config "$GITHUB_WORKSPACE/config/rust_disable.config"
