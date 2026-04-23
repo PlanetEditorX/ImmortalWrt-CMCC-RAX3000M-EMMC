@@ -13,6 +13,8 @@
 # 移除 ImmortalWrt 源码中自带的旧版 OpenClash
 # 官方 feed 中的版本往往更新不及时，会导致版本撕裂报错
 rm -rf feeds/luci/applications/luci-app-openclash
+# 强制删除 Rust 包目录
+rm -rf feeds/packages/lang/rust
 
 # 添加 OpenClash 官方源
 git clone --depth=1 -b master https://github.com/vernesong/OpenClash.git package/luci-app-openclash
