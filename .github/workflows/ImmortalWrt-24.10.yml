@@ -47,7 +47,7 @@ on:
         options:
           - '24.10.config'
       enable_keepalived:
-        description: '集成keepalived'
+        description: '集成 keepalived'
         type: boolean
         required: true
         default: true
